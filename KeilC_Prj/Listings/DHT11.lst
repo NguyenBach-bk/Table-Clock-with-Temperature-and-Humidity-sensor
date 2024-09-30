@@ -1,0 +1,90 @@
+C51 COMPILER V9.60.7.0   DHT11                                                             09/18/2024 09:58:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DHT11
+OBJECT MODULE PLACED IN .\Objects\DHT11.obj
+COMPILER INVOKED BY: D:\Chuong trinh\KeilC_v5\C51\BIN\C51.EXE ..\Lib\DHT11.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND
+                    - PRINT(.\Listings\DHT11.lst) TABS(2) OBJECT(.\Objects\DHT11.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "intrins.h"
+   3          #include "Delay.h"
+   4          
+   5          sbit DHT11 = P3^0;
+   6          
+   7          void delay_40us()
+   8          {
+   9   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  10   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  11   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  12   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  13   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  14   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  15   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  16   1        _nop_ (); _nop_ (); _nop_ (); _nop_ (); _nop_ ();
+  17   1      }
+  18          
+  19          void Request()
+  20          {
+  21   1        DHT11 = 0;
+  22   1        Delay_ms(20);
+  23   1        DHT11 = 1;
+  24   1      }
+  25          
+  26          void Response()
+  27          {
+  28   1        while(DHT11==1);
+  29   1        while(DHT11==0);
+  30   1        while(DHT11==1);
+  31   1      }
+  32          
+  33          int Receive_data()
+  34          {
+  35   1        int i, dataD=0;
+  36   1        for(i=0; i<8;i++)
+  37   1        {
+  38   2          while(DHT11==0);
+  39   2          delay_40us();
+  40   2          if(DHT11==1)
+  41   2            dataD=(dataD<<1)|(0x01);
+  42   2          else
+  43   2            dataD=(dataD<<1);
+  44   2          while(DHT11==1);
+  45   2        }
+  46   1        return dataD;
+  47   1      }
+  48          
+  49          /* Example
+  50            while(1)
+  51            {
+  52              Request();
+  53              Response();
+  54              I_RH=Receive_data();
+C51 COMPILER V9.60.7.0   DHT11                                                             09/18/2024 09:58:44 PAGE 2   
+
+  55              D_RH=Receive_data();
+  56              I_TEMP=Receive_data();
+  57              D_TEMP=Receive_data();
+  58              Checksum=Receive_data();
+  59              
+  60              if((I_RH + D_RH + I_TEMP + D_TEMP) != Checksum)
+  61              {
+  62                Lcd_Out(1,1,"Error!");
+  63              }
+  64          */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    105    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

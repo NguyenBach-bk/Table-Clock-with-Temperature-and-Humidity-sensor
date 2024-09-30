@@ -1,0 +1,371 @@
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE 8051_DIGITAL_CLOCK
+OBJECT MODULE PLACED IN .\Objects\8051_Digital_Clock.obj
+COMPILER INVOKED BY: D:\Chuong trinh\KeilC_v5\C51\BIN\C51.EXE 8051_Digital_Clock.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECT
+                    -EXTEND PRINT(.\Listings\8051_Digital_Clock.lst) TABS(2) OBJECT(.\Objects\8051_Digital_Clock.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "..\Lib\Delay.h"
+   3          #include "..\Lib\Lcd_16_2.h"
+   4          #include "..\Lib\I2C.h"
+   5          #include "..\Lib\DS1307.h"
+   6          #include "..\Lib\DHT11.h"
+   7          
+   8          unsigned char hour, minute, second, old_sec = 60;
+   9          unsigned char day, date, month, year;
+  10          unsigned char I_RH, D_RH, I_TEMP, D_TEMP, checksum;
+  11          unsigned char set_hr, set_min, set_sec;
+  12          unsigned char set_day, set_date, set_mon, set_yr;
+  13          unsigned char mode = 0, clear_scr = 0, update_scr = 0;
+  14          
+  15          sbit MODE = P1^0;
+  16          sbit BTN1 = P1^1;
+  17          sbit BTN2 = P1^2;
+  18          sbit BTN3 = P1^3;
+  19          
+  20          void MODE_BTN()
+  21          {
+  22   1        if(MODE == 0)
+  23   1          {
+  24   2            Delay_ms(20);
+  25   2            if(MODE == 1)
+  26   2            {
+  27   3              clear_scr = 0;
+  28   3              mode++;
+  29   3              if(mode == 1)
+  30   3                update_scr = 0;
+  31   3              if(mode == 2)
+  32   3                update_scr = 2;
+  33   3            }
+  34   2            
+  35   2            if(mode >= 3)
+  36   2            {
+  37   3              clear_scr = 0;
+  38   3              update_scr = 0;
+  39   3              mode = 0;
+  40   3            }
+  41   2          }
+  42   1      }
+  43          
+  44          void SET_TIME()
+  45          {
+  46   1        if(BTN1 == 0)
+  47   1          {
+  48   2            Delay_ms(20);
+  49   2            if(BTN1 == 1)
+  50   2              {
+  51   3               set_hr++;
+  52   3               update_scr--;
+  53   3              }
+  54   2          }
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 2   
+
+  55   1        
+  56   1        if(set_hr >= 24)
+  57   1          {
+  58   2            set_hr = 0;
+  59   2          }
+  60   1              
+  61   1        if(BTN2 == 0)
+  62   1          {
+  63   2            Delay_ms(20);
+  64   2            if(BTN2 == 1)
+  65   2              {
+  66   3               set_min++;
+  67   3               update_scr--;
+  68   3              }
+  69   2          }
+  70   1        
+  71   1        if(set_min >= 60)
+  72   1          {
+  73   2            set_min = 0;
+  74   2          }
+  75   1          
+  76   1      }
+  77          
+  78          void SET_CAL() 
+  79          {
+  80   1          unsigned char days_in_month;
+  81   1      
+  82   1          if (set_mon == 2) 
+  83   1          { 
+  84   2              if ((set_yr % 4 == 0) && (set_yr != 0)) 
+  85   2              {
+  86   3                  days_in_month = 29;
+  87   3              } else 
+  88   2              {
+  89   3                  days_in_month = 28;
+  90   3              }
+  91   2          } 
+  92   1          else if (set_mon == 4 || set_mon == 6 || set_mon == 9 || set_mon == 11) 
+  93   1          {
+  94   2              days_in_month = 30;
+  95   2          } 
+  96   1          else 
+  97   1          {
+  98   2              days_in_month = 31;
+  99   2          }
+ 100   1      
+ 101   1          if (BTN1 == 0) 
+ 102   1          {
+ 103   2              Delay_ms(20);
+ 104   2              if (BTN1 == 1) 
+ 105   2              {
+ 106   3                  set_date++;
+ 107   3                  update_scr--;
+ 108   3                  if (set_date > days_in_month) 
+ 109   3                  {
+ 110   4                      set_date = 1;
+ 111   4                  }
+ 112   3              }
+ 113   2          }
+ 114   1      
+ 115   1          if (BTN2 == 0) 
+ 116   1          {
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 3   
+
+ 117   2              Delay_ms(20);
+ 118   2              if (BTN2 == 1)
+ 119   2              {
+ 120   3                  set_mon++;
+ 121   3                  update_scr--;
+ 122   3                  if (set_mon > 12) 
+ 123   3                  {
+ 124   4                      set_mon = 1;
+ 125   4                  }
+ 126   3              }
+ 127   2          }
+ 128   1      
+ 129   1          if (BTN3 == 0) 
+ 130   1          {
+ 131   2              Delay_ms(20);
+ 132   2              if (BTN3 == 1) 
+ 133   2              {
+ 134   3                  set_yr++;
+ 135   3                  update_scr--;
+ 136   3                  if (set_yr > 99) 
+ 137   3                  {
+ 138   4                      set_yr = 0;
+ 139   4                  }
+ 140   3              }
+ 141   2          }
+ 142   1      }
+ 143          
+ 144          void RETURN()
+ 145          {
+ 146   1        if(BTN3 == 0)
+ 147   1          {
+ 148   2            Delay_ms(20);
+ 149   2            if(BTN3 == 1)
+ 150   2            {
+ 151   3              clear_scr = 0;
+ 152   3              update_scr = 0;
+ 153   3              mode = 0;
+ 154   3            }
+ 155   2          }
+ 156   1      }
+ 157          
+ 158          void main()
+ 159          {
+ 160   1          LCD_Init(); // Move this outside the loop
+ 161   1          while(1)
+ 162   1          {
+ 163   2            while(mode == 0)
+ 164   2            {
+ 165   3              
+ 166   3              MODE_BTN(); 
+ 167   3              
+ 168   3              if(clear_scr == 0)
+ 169   3              {
+ 170   4                LCD_Clear();
+ 171   4                Delay_ms(10);
+ 172   4                clear_scr = 1;
+ 173   4              }
+ 174   3              
+ 175   3              MODE_BTN(); 
+ 176   3              
+ 177   3              DS1307_Read_Time(&hour, &minute, &second); // Use pointers
+ 178   3              DS1307_Read_Date(&day, &date, &month, &year);
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 4   
+
+ 179   3              
+ 180   3              MODE_BTN(); 
+ 181   3              
+ 182   3              if(second != old_sec)
+ 183   3              { 
+ 184   4              MODE_BTN(); 
+ 185   4              
+ 186   4              LCD_Gotoxy(0, 0);
+ 187   4              LCD_Puts("  ");
+ 188   4              LCD_Gotoxy(10, 0);
+ 189   4              LCD_Puts("  ");
+ 190   4              LCD_Gotoxy(15, 0);
+ 191   4              LCD_Puts(" ");
+ 192   4                
+ 193   4              MODE_BTN(); 
+ 194   4                
+ 195   4              LCD_Gotoxy(0, 1);
+ 196   4              LCD_Puts("  ");
+ 197   4              LCD_Gotoxy(10, 1);
+ 198   4              LCD_Puts("  ");
+ 199   4              LCD_Gotoxy(15, 1);
+ 200   4              LCD_Puts(" ");
+ 201   4                
+ 202   4              MODE_BTN();
+ 203   4                
+ 204   4              LCD_Gotoxy(2, 0);
+ 205   4              LCD_PutChar(hour / 10 + '0'); // Convert to ASCII
+ 206   4              LCD_PutChar(hour % 10 + '0');
+ 207   4              LCD_PutChar(':');
+ 208   4              LCD_PutChar(minute / 10 + '0');
+ 209   4                
+ 210   4              MODE_BTN();
+ 211   4                
+ 212   4              LCD_PutChar(minute % 10 + '0');
+ 213   4              LCD_PutChar(':');
+ 214   4              LCD_PutChar(second / 10 + '0');
+ 215   4              LCD_PutChar(second % 10 + '0');
+ 216   4              
+ 217   4              MODE_BTN();
+ 218   4                
+ 219   4              LCD_Gotoxy(2, 1);
+ 220   4              LCD_PutChar(date / 10 + '0'); // Convert to ASCII
+ 221   4              LCD_PutChar(date % 10 + '0');
+ 222   4              LCD_PutChar('/');
+ 223   4              LCD_PutChar(month / 10 + '0');
+ 224   4              
+ 225   4              MODE_BTN();
+ 226   4              
+ 227   4              LCD_PutChar(month % 10 + '0');
+ 228   4              LCD_PutChar('/');
+ 229   4              LCD_PutChar(year / 10 + '0');
+ 230   4              LCD_PutChar(year % 10 + '0');
+ 231   4              
+ 232   4              MODE_BTN();
+ 233   4              
+ 234   4              Request();
+ 235   4              Response();
+ 236   4              I_RH     = Receive_data();
+ 237   4              D_RH     = Receive_data();
+ 238   4              I_TEMP   = Receive_data();
+ 239   4              D_TEMP   = Receive_data();
+ 240   4              checksum = Receive_data();
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 5   
+
+ 241   4              
+ 242   4              MODE_BTN();
+ 243   4              
+ 244   4              LCD_Gotoxy(12, 0);
+ 245   4              LCD_PutChar((I_TEMP-2)/10+48);
+ 246   4              LCD_PutChar((I_TEMP-2)%10+48);
+ 247   4              LCD_PutChar('C');
+ 248   4              
+ 249   4              MODE_BTN();
+ 250   4              
+ 251   4              LCD_Gotoxy(12, 1);
+ 252   4              LCD_PutChar(I_RH/10+48);
+ 253   4              LCD_PutChar(I_RH%10+48);
+ 254   4              LCD_PutChar('%');
+ 255   4              
+ 256   4              set_hr = hour; set_min = minute; set_sec = second;
+ 257   4              set_day = day; set_date = date; set_mon = month; set_yr = year;
+ 258   4              
+ 259   4              old_sec = second;
+ 260   4              
+ 261   4              MODE_BTN();
+ 262   4              }
+ 263   3            }
+ 264   2            
+ 265   2            while(mode == 1)
+ 266   2            {
+ 267   3              MODE_BTN();
+ 268   3              SET_TIME();
+ 269   3              RETURN();
+ 270   3              
+ 271   3              if(clear_scr == 0)
+ 272   3              {
+ 273   4                LCD_Clear();
+ 274   4                Delay_ms(10);
+ 275   4                clear_scr = 1;
+ 276   4              }
+ 277   3              
+ 278   3              MODE_BTN();
+ 279   3              SET_TIME();
+ 280   3              RETURN();
+ 281   3              
+ 282   3              while(update_scr == 0)
+ 283   3              {
+ 284   4                LCD_Gotoxy(4, 0);
+ 285   4                LCD_Puts("SET TIME");
+ 286   4                LCD_Gotoxy(2, 1);
+ 287   4                LCD_Puts("HR:");
+ 288   4                LCD_PutChar(set_hr / 10 + '0');
+ 289   4                LCD_PutChar(set_hr % 10 + '0');
+ 290   4                LCD_Gotoxy(9, 1);
+ 291   4                LCD_Puts("MN:");
+ 292   4                LCD_PutChar(set_min / 10 + '0');
+ 293   4                LCD_PutChar(set_min % 10 + '0');  
+ 294   4                DS1307_Write_Time(set_hr, set_min, 0);
+ 295   4                update_scr = 1;
+ 296   4              }
+ 297   3            }
+ 298   2            
+ 299   2            while(mode == 2)
+ 300   2            {
+ 301   3              MODE_BTN();
+ 302   3              SET_CAL();
+C51 COMPILER V9.60.7.0   8051_DIGITAL_CLOCK                                                09/18/2024 09:58:44 PAGE 6   
+
+ 303   3              
+ 304   3              if(clear_scr == 0)
+ 305   3              {
+ 306   4                LCD_Clear();
+ 307   4                Delay_ms(10);
+ 308   4                clear_scr = 1;
+ 309   4              }
+ 310   3              
+ 311   3              MODE_BTN();
+ 312   3              SET_CAL();
+ 313   3              
+ 314   3              while(update_scr == 2)
+ 315   3              {
+ 316   4                LCD_Gotoxy(1, 0);
+ 317   4                LCD_Puts("SET DATE");
+ 318   4                LCD_Gotoxy(11, 0);
+ 319   4                LCD_Puts("DY:");
+ 320   4                LCD_PutChar(set_date / 10 + '0');
+ 321   4                LCD_PutChar(set_date % 10 + '0');
+ 322   4                LCD_Gotoxy(3, 1);
+ 323   4                LCD_Puts("MT:");
+ 324   4                LCD_PutChar(set_mon / 10 + '0');
+ 325   4                LCD_PutChar(set_mon % 10 + '0');
+ 326   4                LCD_Gotoxy(10, 1);
+ 327   4                LCD_Puts("YR:");
+ 328   4                LCD_PutChar(set_yr / 10 + '0');
+ 329   4                LCD_PutChar(set_yr % 10 + '0');
+ 330   4                DS1307_Write_Date(1, set_date, set_mon, set_yr);
+ 331   4                update_scr = 3;
+ 332   4              }
+ 333   3            }
+ 334   2         }
+ 335   1      }
+ 336          
+ 337          #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1201    ----
+   CONSTANT SIZE    =     43    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     23       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,97 @@
+C51 COMPILER V9.60.7.0   DS1307                                                            09/18/2024 09:58:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DS1307
+OBJECT MODULE PLACED IN .\Objects\DS1307.obj
+COMPILER INVOKED BY: D:\Chuong trinh\KeilC_v5\C51\BIN\C51.EXE ..\Lib\DS1307.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEN
+                    -D PRINT(.\Listings\DS1307.lst) TABS(2) OBJECT(.\Objects\DS1307.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "I2C.h"
+   3          
+   4          void DS1307_Write_Time(unsigned char hour, unsigned char minute, unsigned char second) //24h 
+   5          {
+   6   1        second = ((second/10)<<4)|(second%10);
+   7   1        minute = ((minute/10)<<4)|(minute%10);
+   8   1        hour   = ((hour  /10)<<4)|(hour  %10);
+   9   1        I2C_Start();
+  10   1        I2C_Write(0xD0);
+  11   1        I2C_Write(0x00);
+  12   1        I2C_Write(second);
+  13   1        I2C_Write(minute);
+  14   1        I2C_Write(hour);
+  15   1        I2C_Stop();
+  16   1      }
+  17          
+  18          void DS1307_Read_Time(unsigned char *hour, unsigned char *minute, unsigned char *second)
+  19          {
+  20   1        unsigned char tmp_h, tmp_m, tmp_s;
+  21   1        I2C_Start();
+  22   1        I2C_Write(0xD0);
+  23   1        I2C_Write(0x00);
+  24   1        I2C_Start();
+  25   1        I2C_Write(0xD1);
+  26   1        tmp_s = I2C_Read(1);
+  27   1        tmp_m = I2C_Read(1);
+  28   1        tmp_h = I2C_Read(0);
+  29   1        I2C_Stop();
+  30   1        *second   = ((tmp_s >> 4) & 0x0F) * 10 + (tmp_s & 0x0F);
+  31   1        *minute = ((tmp_m >> 4) & 0x0F) * 10 + (tmp_m & 0x0F);
+  32   1        *hour = ((tmp_h >> 4) & 0x0F) * 10 + (tmp_h & 0x0F);
+  33   1      }
+  34          
+  35          void DS1307_Write_Date(unsigned char day, unsigned char date, unsigned char month, unsigned char year)
+  36          {
+  37   1        date  = ((date/10)<<4)  | (date%10);
+  38   1        month = ((month/10)<<4) | (month%10);
+  39   1        year  = ((year/10)<<4)  | (year%10);
+  40   1        I2C_Start();
+  41   1        I2C_Write(0xD0);
+  42   1        I2C_Write(0x03); 
+  43   1        I2C_Write(day); 
+  44   1        I2C_Write(date);
+  45   1        I2C_Write(month);
+  46   1        I2C_Write(year);
+  47   1        I2C_Stop();
+  48   1      }
+  49          
+  50          void DS1307_Read_Date(unsigned char * day, unsigned char * date, unsigned char * month, unsigned char * ye
+             -ar)
+  51          {
+  52   1        I2C_Start();
+  53   1        I2C_Write(0xD0); 
+C51 COMPILER V9.60.7.0   DS1307                                                            09/18/2024 09:58:44 PAGE 2   
+
+  54   1        I2C_Write(0x03);
+  55   1        I2C_Start(); 
+  56   1        I2C_Write(0xD1); 
+  57   1        *day  = I2C_Read(1);
+  58   1        *date = I2C_Read(1);
+  59   1        *month= I2C_Read(1);
+  60   1        *year = I2C_Read(0);
+  61   1        I2C_Stop();
+  62   1        *day &= 0x07;
+  63   1        *date &= 0x3F;
+  64   1        *date = (*date>>4)*10 + (*date & 0x0F);
+  65   1        *month &= 0x1F;
+  66   1        *month = (*month>>4)*10 + (*month & 0x0F);
+  67   1        *year = (*year>>4)*10 + (*year & 0x0F); 
+  68   1      }
+  69          
+  70          #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    535    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      31
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

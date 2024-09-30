@@ -1,0 +1,9 @@
+".\Objects\STARTUP.obj",
+".\Objects\8051_Digital_Clock.obj",
+".\Objects\LCD_16_2.obj",
+".\Objects\Delay.obj",
+".\Objects\I2C.obj",
+".\Objects\DS1307.obj",
+".\Objects\DHT11.obj" 
+TO ".\Objects\8051_Digital_Clock" 
+PRINT(".\Listings\8051_Digital_Clock.m51") RAMSIZE(256) 

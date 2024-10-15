@@ -12,10 +12,10 @@ unsigned char set_hr, set_min, set_sec;
 unsigned char set_day, set_date, set_mon, set_yr;
 unsigned char mode = 0, clear_scr = 0, update_scr = 0;
 
-sbit MODE = P1^0;
-sbit BTN1 = P1^1;
-sbit BTN2 = P1^2;
-sbit BTN3 = P1^3;
+sbit MODE = P1^4;
+sbit BTN1 = P1^5;
+sbit BTN2 = P1^6;
+sbit BTN3 = P1^7;
 
 void MODE_BTN()
 {
@@ -157,11 +157,19 @@ void RETURN()
 
 void main()
 {
+	  P3_6 = 0;
+		P3_7 = 0;
     LCD_Init(); // Move this outside the loop
     while(1)
     {
 			while(mode == 0)
 			{
+				MODE_BTN();	
+				
+				if(P3_6 == 1)
+					P3_7 = 1;
+				else
+					P3_7 = 0;
 				
 				MODE_BTN();	
 				
@@ -242,8 +250,8 @@ void main()
 				MODE_BTN();
 				
 				LCD_Gotoxy(12, 0);
-				LCD_PutChar((I_TEMP-2)/10+48);
-				LCD_PutChar((I_TEMP-2)%10+48);
+				LCD_PutChar(I_TEMP/10+48);
+				LCD_PutChar(I_TEMP%10+48);
 				LCD_PutChar('C');
 				
 				MODE_BTN();
@@ -264,6 +272,15 @@ void main()
 			
 			while(mode == 1)
 			{
+				MODE_BTN();
+				SET_TIME();
+				RETURN();
+				
+				if(P3_6 == 1)
+					P3_7 = 1;
+				else
+					P3_7 = 0;
+				
 				MODE_BTN();
 				SET_TIME();
 				RETURN();
@@ -298,6 +315,14 @@ void main()
 			
 			while(mode == 2)
 			{
+				MODE_BTN();
+				SET_CAL();
+				
+				if(P3_6 == 1)
+					P3_7 = 1;
+				else
+					P3_7 = 0;
+				
 				MODE_BTN();
 				SET_CAL();
 				

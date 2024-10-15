@@ -1,20 +1,22 @@
 #include <REGX52.H>
 #include "intrins.h"
 
-sbit I2C_SCL = P1^7;
-sbit I2C_SDA = P1^5;
+sbit I2C_SCL = P3^3;
+sbit I2C_SDA = P3^4;
 
-void I2C_Delay(){
-	_nop_() ; _nop_() ;  _nop_() ; _nop_() ; _nop_() ;
+void I2C_Delay()
+{
 	_nop_() ; _nop_() ;  _nop_() ; _nop_() ; _nop_() ;
 }
 
-void I2C_Init(){
+void I2C_Init()
+{
 	I2C_SCL = 1;
 	I2C_SDA = 1;
 }
 
-void I2C_Start(){
+void I2C_Start()
+{
 	I2C_SCL = 1;
 	I2C_Delay();
 	I2C_SDA = 0;
@@ -22,7 +24,8 @@ void I2C_Start(){
 	I2C_SCL = 0;
 }
 
-void I2C_Stop(){
+void I2C_Stop()
+{
 	I2C_SDA = 0;
 	I2C_Delay();
 	I2C_SCL = 1;
@@ -78,17 +81,17 @@ unsigned char I2C_Read(bit ack)
 {
     unsigned char i, dat=0;
     for(i=0;i<8;i++)
-	{
-	  I2C_SDA = 1;
-		I2C_Delay();
-	  I2C_SCL = 1;
-		I2C_Delay();
-	    dat <<= 1;
-		if(I2C_SDA)
-		{
-		 	dat |= 0x01;
-		}
-			I2C_SCL = 0;
+	  {
+	   I2C_SDA = 1;
+		 I2C_Delay();
+	   I2C_SCL = 1;
+		 I2C_Delay();
+	   dat <<= 1;
+		 if(I2C_SDA)
+	  	{
+		   dat |= 0x01;
+		  }
+		 I2C_SCL = 0;
     }
 	if(ack)
 	{

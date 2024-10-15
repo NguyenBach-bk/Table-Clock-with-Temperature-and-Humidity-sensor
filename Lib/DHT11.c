@@ -2,7 +2,7 @@
 #include "intrins.h"
 #include "Delay.h"
 
-sbit DHT11 = P3^0;
+sbit DHT11 = P3^5;
 
 void delay_40us()
 {
